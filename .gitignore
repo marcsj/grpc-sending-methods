@@ -1,0 +1,8 @@
+.DS_Store
+.idea/
+backend/vendor/
+*/node_modules/
+keys/
+*.pb.go
+
+

@@ -1,0 +1,38 @@
+syntax = "proto3";
+package dog;
+
+message TrackRequest {
+    string locationID = 1;
+    string floorID = 2;
+}
+
+message Dog {
+    string id = 1;
+    string name = 2;
+    string ownerID = 3;
+    string locationID = 4;
+    string floorID = 5;
+    Location location = 6;
+    DogStatus status = 7;
+}
+
+message Location {
+    double x = 1;
+    double y = 2;
+}
+
+enum DogStatus {
+    UNKNOWN = 0;
+    OK = 1;
+    GOOD_PUP = 2;
+    KENNEL_COUGH = 3;
+    WORMS = 4;
+    FLEAS = 5;
+    LYME_DISEASE = 6;
+    HEART_DISEASE = 7;
+    AGGRESSIVE = 8;
+}
+
+service DogTrack {
+    rpc TrackDogs (TrackRequest) returns (stream Dog) {}
+}
