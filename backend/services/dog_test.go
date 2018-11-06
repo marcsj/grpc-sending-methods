@@ -41,6 +41,11 @@ func TestDogTrackServer_TrackDogs(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		log.Println(dog.Id, ": Name: ", dog.Name, "Owned by: ", dog.OwnerID, "Status: ", dog.Status.String(), dog.Location.X, dog.Location.Y)
+		log.Println(
+			dog.Id,
+			": Name: ", dog.Name,
+			"Owned by: ", dog.OwnerID,
+			"Status: ", dog.Status.String(),
+			dog.Location.X, dog.Location.Y)
 	}
 }
