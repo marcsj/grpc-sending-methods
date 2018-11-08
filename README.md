@@ -1,4 +1,4 @@
-# Dog Tracker
+# Streaming gRPC-web Example
 An example of grpc-web using a streaming dog tracker. This is a simple example of streaming grpc to grpc-web, and does not use an actual datastore apart from the list of dogs created in memory.
 
 ## Building:
