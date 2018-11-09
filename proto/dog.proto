@@ -2,16 +2,16 @@ syntax = "proto3";
 package dog;
 
 message TrackRequest {
-    string locationID = 1;
-    string floorID = 2;
+    string location_id = 1;
+    string floor_id = 2;
 }
 
 message Dog {
     string id = 1;
     string name = 2;
-    string ownerID = 3;
-    string locationID = 4;
-    string floorID = 5;
+    string owner_id = 3;
+    string location_id = 4;
+    string floor_id = 5;
     Location location = 6;
     DogStatus status = 7;
 }

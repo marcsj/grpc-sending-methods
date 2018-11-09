@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
+set -eu
+
+mkdir -p ../keys
+mkdir -p ../backend/dog
+mkdir -p ../web/generated
 
 protoc -I ./ \
-       --go_out=plugins=grpc:../backend/dog \
-       dog.proto
-
-# TODO: add js generation when we add clients:
-#--js_out=import_style=commonjs,binary:../client/js/_proto \
+  --plugin=protoc-gen-ts=../web/node_modules/.bin/protoc-gen-ts \
+  --js_out=import_style=commonjs,binary:../web/generated \
+  --ts_out=service=true:../web/generated \
+  --go_out=plugins=grpc:../backend/dog \
+  dog.proto
