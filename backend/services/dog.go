@@ -3,19 +3,20 @@ package services
 import (
 	"errors"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/Pallinder/go-randomdata"
 	"github.com/marcsj/dog_tracker/backend/dog"
 	"github.com/segmentio/ksuid"
-	"log"
-	"time"
 )
 
 type DogTrackServer struct{}
 
 func (s DogTrackServer) TrackDogs(req *dog.TrackRequest, outStream dog.DogTrack_TrackDogsServer) error {
 	locationTag := LocationTag{
-		locationID: req.GetLocationID(),
-		floorID: req.GetFloorID(),
+		locationID: req.GetLocationId(),
+		floorID:    req.GetFloorId(),
 	}
 	if len(daycareDogs[locationTag]) < 1 {
 		return errors.New("no dogs found at that location")
@@ -29,8 +30,8 @@ func (s DogTrackServer) TrackDogs(req *dog.TrackRequest, outStream dog.DogTrack_
 	}
 
 	dogChannel := make(chan *dog.Dog)
-	for i := 0; i < 2; i ++ {
-		go DogCare(dogChannel, req.GetLocationID(), req.GetFloorID())
+	for i := 0; i < 2; i++ {
+		go DogCare(dogChannel, req.GetLocationId(), req.GetFloorId())
 	}
 	for {
 		select {
@@ -48,7 +49,7 @@ func (s DogTrackServer) TrackDogs(req *dog.TrackRequest, outStream dog.DogTrack_
 	Ordinarily, this file would not contain any code apart from the server.
 	In this case since we are showing our data without a real store(apart from in memory),
 	we are using the same file. This example is just to show how a streaming setup might work.
- */
+*/
 func InitializeDogs() {
 	for i := 0; i < NUM_DAYCARES; i++ {
 		location := ksuid.New().String()
@@ -59,19 +60,19 @@ func InitializeDogs() {
 	for i := 0; i < 1000; i++ {
 		locationID := Locations[randomdata.Number(0, NUM_DAYCARES)]
 		Dogs[i] = &dog.Dog{
-			Id: ksuid.New().String(),
-			Name: randomdata.SillyName(),
-			OwnerID: ksuid.New().String(),
-			LocationID: locationID,
-			FloorID: fmt.Sprint(randomdata.Number(Floors[locationID])),
+			Id:         ksuid.New().String(),
+			Name:       randomdata.SillyName(),
+			OwnerId:    ksuid.New().String(),
+			LocationId: locationID,
+			FloorId:    fmt.Sprint(randomdata.Number(Floors[locationID])),
 			Location: &dog.Location{
 				X: randomdata.Decimal(-20, 20),
 				Y: randomdata.Decimal(-20, 20)},
 			Status: dog.DogStatus(randomdata.Number(len(dog.DogStatus_value))),
 		}
 		locationTag := LocationTag{
-			locationID: Dogs[i].LocationID,
-			floorID: Dogs[i].FloorID,
+			locationID: Dogs[i].LocationId,
+			floorID:    Dogs[i].FloorId,
 		}
 		daycareDogs[locationTag] = append(daycareDogs[locationTag], Dogs[i])
 	}
@@ -79,6 +80,7 @@ func InitializeDogs() {
 }
 
 const NUM_DAYCARES = 5
+
 var Dogs = make([]*dog.Dog, 1000)
 var Locations = make([]string, NUM_DAYCARES)
 var Floors = make(map[string]int, 0)
@@ -87,13 +89,13 @@ var daycareDogs = make(map[LocationTag][]*dog.Dog, 0)
 
 type LocationTag struct {
 	locationID string
-	floorID string
+	floorID    string
 }
 
 func DogCare(dogChannel chan *dog.Dog, locationID string, floorID string) {
 	locationTag := LocationTag{
 		locationID: locationID,
-		floorID: floorID,
+		floorID:    floorID,
 	}
 	dogs := daycareDogs[locationTag]
 	tick := time.Tick(500 * time.Millisecond)
@@ -104,8 +106,8 @@ func DogCare(dogChannel chan *dog.Dog, locationID string, floorID string) {
 				change := randomdata.Boolean()
 				if change {
 					d.Location = &dog.Location{
-						X: d.Location.X+randomdata.Decimal(-1, 1),
-						Y: d.Location.Y+randomdata.Decimal(-1, 1),
+						X: d.Location.X + randomdata.Decimal(-1, 1),
+						Y: d.Location.Y + randomdata.Decimal(-1, 1),
 					}
 					statusChange := randomdata.Boolean()
 					if statusChange {

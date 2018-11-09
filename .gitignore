@@ -1,8 +1,9 @@
+.vscode/
 .DS_Store
 .idea/
 backend/vendor/
-*/node_modules/
+node_modules/
 keys/
 *.pb.go
-
-
+generated
+backend/dog
