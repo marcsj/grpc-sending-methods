@@ -29,6 +29,6 @@ const grpcRequest = grpc.invoke(DogTrack.TrackDogs, {
   }
 });
 
-setTimeout(() => {
-  grpcRequest.close();
-}, 1000);
+// setTimeout(() => {
+//   grpcRequest.close();
+// }, 1000);
