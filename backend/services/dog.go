@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Pallinder/go-randomdata"
-	"github.com/marcsj/dog_tracker/backend/dog"
+	"github.com/marcsj/streaming-grpc-web-example/backend/dog"
 	"github.com/segmentio/ksuid"
 )
 

@@ -6,6 +6,8 @@ mkdir -p ../backend/dog
 mkdir -p ../web/generated
 
 protoc -I ./ \
+  -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+  --grpc-gateway_out=logtostderr=true:../backend/dog \
   --plugin=protoc-gen-ts=../web/node_modules/.bin/protoc-gen-ts \
   --js_out=import_style=commonjs,binary:../web/generated \
   --ts_out=service=true:../web/generated \
