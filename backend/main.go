@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/marcsj/streaming-grpc-web-example/backend/dog"
 	"github.com/marcsj/streaming-grpc-web-example/backend/services"
+	"github.com/tmc/grpc-websocket-proxy/wsproxy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"log"
@@ -31,8 +34,9 @@ var tlsKeyFilePath = flag.String(
 func main() {
 	// initializes our sample setup
 	services.InitializeDogs()
-	httpsPort := 9091
 	grpcPort := 50051
+	httpsPort := 9091
+	gatewayPort := 8080
 
 	// setup for gRPC server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", grpcPort))
@@ -48,18 +52,40 @@ func main() {
 		wrappedServer.ServeHTTP(resp, req)
 	}
 	httpServer := http.Server{
-		Addr:    fmt.Sprintf(":%d", httpsPort),
+		Addr:    fmt.Sprintf(":%v", httpsPort),
 		Handler: http.HandlerFunc(handler),
 	}
+	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
+
+	// setup for gRPC-gateway
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
 
 	errChannel := make(chan error)
+
+	// running gRPC server
 	go func () {
-		grpclog.Infof("Starting server. https port: %v", httpsPort)
+		grpclog.Infof("Starting gRPC server. tcp port: %v", grpcPort)
+		errChannel <- grpcServer.Serve(lis)
+	}()
+
+	// running proxy for grpc-web
+	go func () {
+		grpclog.Infof("Starting grpc-web proxy server. https port: %v", httpsPort)
 		errChannel <- httpServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath)
 	}()
+
+	// running gRPC-gateway
 	go func () {
-		grpclog.Infof("Starting server. tcp port: %v", grpcPort)
-		errChannel <- grpcServer.Serve(lis)
+		errChannel <- dog.RegisterDogTrackHandlerFromEndpoint(
+			context.Background(), mux, fmt.Sprintf("localhost:%v", grpcPort), opts)
+		grpclog.Infof("Starting gRPC-gateway server. https port: %v", gatewayPort)
+		grpcGateway := http.Server{
+			Addr: fmt.Sprintf(":%v", gatewayPort),
+			Handler: wsproxy.WebsocketProxy(mux),
+			ErrorLog: logger,
+		}
+		errChannel <- grpcGateway.ListenAndServe()
 	}()
 
 	for {
