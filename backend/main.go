@@ -8,6 +8,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/marcsj/streaming-grpc-web-example/backend/dog"
 	"github.com/marcsj/streaming-grpc-web-example/backend/services"
+	"github.com/tmc/grpc-websocket-proxy/wsproxy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"log"
@@ -81,7 +82,7 @@ func main() {
 		grpclog.Infof("Starting gRPC-gateway server. https port: %v", gatewayPort)
 		grpcGateway := http.Server{
 			Addr: fmt.Sprintf(":%v", gatewayPort),
-			Handler: mux,
+			Handler: wsproxy.WebsocketProxy(mux),
 			ErrorLog: logger,
 		}
 		errChannel <- grpcGateway.ListenAndServe()
