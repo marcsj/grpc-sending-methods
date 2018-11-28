@@ -36,7 +36,7 @@ func main() {
 	services.InitializeDogs()
 	grpcPort := 50051
 	httpsPort := 9091
-	gatewayPort := 8080
+	gatewayPort := 8081
 
 	// setup for gRPC server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", grpcPort))

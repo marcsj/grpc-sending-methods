@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"github.com/marcsj/streaming-grpc-web-example/backend/dog"
+	"golang.org/x/net/websocket"
 	"google.golang.org/grpc"
 	"io"
 	"log"
@@ -10,7 +11,7 @@ import (
 	"time"
 )
 
-func TestDogTrackServer_TrackDogs(t *testing.T) {
+func TestGRPCServer_TrackDogs(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
 	}
@@ -47,5 +48,27 @@ func TestDogTrackServer_TrackDogs(t *testing.T) {
 			"Owned by: ", dog.OwnerId,
 			"Status: ", dog.Status.String(),
 			dog.Location.X, dog.Location.Y)
+	}
+}
+
+func TestWSServer_TrackDogs(t *testing.T) {
+	if testing.Short() {
+		t.SkipNow()
+	}
+	var err error
+	conn, err := websocket.Dial("ws://localhost:8081/v1/dogs/track", "", "http://localhost/")
+	if err != nil {
+		t.Error(err)
+	}
+	conn.Write([]byte("test message"))
+	connectionBytes := make([]byte, 256)
+	_, err = conn.Read(connectionBytes)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(string(connectionBytes))
+	err = conn.Close()
+	if err != nil {
+		t.Error(err)
 	}
 }
