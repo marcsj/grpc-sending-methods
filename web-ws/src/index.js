@@ -3,18 +3,10 @@ window.onSubmit = event => {
   const locationID = document.querySelector("#location-id").value;
   const floorID = "1";
   const ws = new WebSocket(
-    // `ws://${window.location.hostname}:8080/v1/dogs/track`
-    `ws://${window.location.hostname}:8080/`
+    `ws://${window.location.hostname}:8081/v1/dogs/track?location_id=${locationID}&floor_id=${floorID}`
   );
   ws.addEventListener("open", event => {
     console.log("open", event);
-    ws.send(
-      JSON.stringify({
-        command: "dogs.track",
-        locationID,
-        floorID
-      })
-    );
   });
   ws.addEventListener("message", event => {
     console.log("message", event);
