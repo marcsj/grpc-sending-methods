@@ -1,7 +1,7 @@
 syntax = "proto3";
 package dog;
 
-// import "google/api/annotations.proto";
+import "google/api/annotations.proto";
 
 message TrackRequest {
     string location_id = 1;
@@ -37,9 +37,8 @@ enum DogStatus {
 
 service DogTrack {
     rpc TrackDogs (TrackRequest) returns (stream Dog) {
-        // option (google.api.http) = {
-        //     post: "/v1/dogs/track"
-        //     body: "*"
-        // };
+         option (google.api.http) = {
+             get: "/v1/dogs/track"
+         };
     }
 }
