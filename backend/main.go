@@ -8,6 +8,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/marcsj/grpc-sending-methods/backend/dog"
 	"github.com/marcsj/grpc-sending-methods/backend/services"
+	"github.com/marcsj/grpc-sending-methods/backend/store"
 	"github.com/tmc/grpc-websocket-proxy/wsproxy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
@@ -32,11 +33,13 @@ var tlsKeyFilePath = flag.String(
 	"Path to the private key file.")
 
 func main() {
-	// initializes our sample setup
-	services.InitializeDogs()
+	// setup our parameters
 	grpcPort := 50051
 	httpsPort := 9091
 	gatewayPort := 8081
+
+	numDayCares := 4
+	numDogs := 1000
 
 	// setup for gRPC server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", grpcPort))
@@ -44,7 +47,11 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
-	dog.RegisterDogTrackServer(grpcServer, services.DogTrackServer{})
+
+	// setup services
+	dogStore := store.NewDogStore(numDayCares, numDogs)
+	dogTrackServer := services.NewDogTrackServer(dogStore)
+	dog.RegisterDogTrackServer(grpcServer, dogTrackServer)
 
 	// setup for proxy for grpc-web
 	wrappedServer := grpcweb.WrapServer(grpcServer)

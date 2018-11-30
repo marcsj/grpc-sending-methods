@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"github.com/marcsj/streaming-grpc-web-example/backend/dog"
+	"github.com/marcsj/grpc-sending-methods/backend/dog"
 	"golang.org/x/net/websocket"
 	"google.golang.org/grpc"
 	"io"
@@ -26,8 +26,8 @@ func TestGRPCServer_TrackDogs(t *testing.T) {
 
 	client := dog.NewDogTrackClient(conn)
 	request := &dog.TrackRequest{
-		LocationId: "<location_id>",
-		FloorId: "1",
+		LocationId: "1DigwpyLyZFdAv76RdG72acm0aL",
+		FloorId: "3",
 	}
 	stream, err := client.TrackDogs(ctx, request)
 	if err != nil {
