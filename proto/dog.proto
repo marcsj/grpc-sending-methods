@@ -8,6 +8,20 @@ message TrackRequest {
     string floor_id = 2;
 }
 
+message Response {
+    string message = 1;
+}
+
+message ListDogs {
+    repeated Dog dogs = 1;
+}
+
+message DeleteRequest {
+    string dog_id = 1;
+    string location_id = 2;
+    string floor_id = 3;
+}
+
 message Dog {
     string id = 1;
     string name = 2;
@@ -40,5 +54,22 @@ service DogTrack {
          option (google.api.http) = {
              get: "/v1/dogs/track"
          };
+    }
+    rpc AddDog (Dog) returns (Response) {
+        option (google.api.http) = {
+            post: "/v1/dogs/add"
+            body: "*"
+        };
+    }
+    rpc GetAllDogs (TrackRequest) returns (ListDogs) {
+        option (google.api.http) = {
+            get: "/v1/dogs"
+        };
+    }
+    rpc DeleteDog (DeleteRequest) returns (Response) {
+        option (google.api.http) = {
+            post: "/v1/dogs/delete/{dog_id}"
+            body: "*"
+        };
     }
 }
