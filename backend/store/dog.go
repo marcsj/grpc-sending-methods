@@ -61,7 +61,7 @@ func NewDogStore(numDayCares int, numDogs int) DogStore {
 		dogStore.db[locationTag] = append(dogStore.db[locationTag], dogStore.dogs[i])
 	}
 	log.Println("Finished initializing good puppers(and some not good).")
-	// wait for a half a second to keep logs clean for seeing location IDs
+	// wait to keep logs clean for location IDs
 	time.Sleep(500 * time.Millisecond)
 	return dogStore
 }
