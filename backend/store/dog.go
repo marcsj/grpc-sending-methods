@@ -12,6 +12,9 @@ import (
 )
 type DogStore interface {
 	GetDogStream(tag LocationTag, numDogs int) (chan *dog.Dog, error)
+	AddDog(dog *dog.Dog) error
+	GetAllDogs(tag LocationTag) []*dog.Dog
+	DeleteDog(tag LocationTag, dogID string) error
 }
 
 type LocationTag struct {
@@ -20,7 +23,6 @@ type LocationTag struct {
 }
 
 type dogStore struct {
-	dogs []*dog.Dog
 	locations []string
 	floors map[string]int
 	db map[LocationTag][]*dog.Dog
@@ -28,7 +30,6 @@ type dogStore struct {
 
 func NewDogStore(numDayCares int, numDogs int) DogStore {
 	dogStore := &dogStore{
-		dogs: make([]*dog.Dog, numDogs),
 		locations: make([]string, numDayCares),
 		floors: make(map[string]int),
 		db: make(map[LocationTag][]*dog.Dog),
@@ -43,7 +44,7 @@ func NewDogStore(numDayCares int, numDogs int) DogStore {
 
 	for i := 0; i < 1000; i++ {
 		locationID := dogStore.locations[rand.Intn(numDayCares)]
-		dogStore.dogs[i] = &dog.Dog{
+		newDog := &dog.Dog{
 			Id:         ksuid.New().String(),
 			Name:       randomdata.SillyName(),
 			OwnerId:    ksuid.New().String(),
@@ -55,10 +56,10 @@ func NewDogStore(numDayCares int, numDogs int) DogStore {
 			Status: dog.DogStatus(randomdata.Number(len(dog.DogStatus_value))),
 		}
 		locationTag := LocationTag{
-			LocationID: dogStore.dogs[i].LocationId,
-			FloorID:    dogStore.dogs[i].FloorId,
+			LocationID: newDog.LocationId,
+			FloorID:    newDog.FloorId,
 		}
-		dogStore.db[locationTag] = append(dogStore.db[locationTag], dogStore.dogs[i])
+		dogStore.db[locationTag] = append(dogStore.db[locationTag], newDog)
 	}
 	log.Println("Finished initializing good puppers(and some not good).")
 	// wait to keep logs clean for location IDs
@@ -78,6 +79,32 @@ func (s dogStore) GetDogStream(tag LocationTag, numDogs int) (chan *dog.Dog, err
 		go s.dogCare(dogChannel, tag)
 	}
 	return dogChannel, nil
+}
+
+func (s dogStore) AddDog(dog *dog.Dog) error {
+	locationTag := LocationTag{
+		LocationID: dog.GetLocationId(),
+		FloorID: dog.GetFloorId(),
+	}
+	if locationTag.FloorID == "" || locationTag.LocationID == "" {
+		return errors.New("new dog location invalid")
+	}
+	s.db[locationTag] = append(s.db[locationTag], dog)
+	return nil
+}
+
+func (s dogStore) GetAllDogs(tag LocationTag) []*dog.Dog {
+	return s.db[tag]
+}
+
+func (s dogStore) DeleteDog(tag LocationTag, dogID string) error {
+	for i := range s.db[tag] {
+		if s.db[tag][i].Id == dogID {
+			s.db[tag] = append(s.db[tag][:i], s.db[tag][i+1:]...)
+			return nil
+		}
+	}
+	return errors.New("dog not found")
 }
 
 func (s dogStore) dogCare(dogChannel chan *dog.Dog, locationTag LocationTag) {
