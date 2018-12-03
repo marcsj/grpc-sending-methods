@@ -31,25 +31,38 @@ var tlsKeyFilePath = flag.String(
 	"tls_key_file",
 	"../keys/local.dev.key",
 	"Path to the private key file.")
+var grpcPort = flag.Int(
+	"grpc_port",
+	50051,
+	"port for gRPC calls")
+var httpsPort = flag.Int(
+	"https_port",
+	9091,
+	"port for TLS encrypted http")
+var gatewayPort = flag.Int(
+	"gateway_port",
+	8081,
+	"port for grpc-gateway requests")
+var numberDogs = flag.Int(
+	"number_dogs",
+	1000,
+	"mumber of dogs to generate")
+var numberDaycares = flag.Int(
+	"number_daycares",
+	4,
+	"number of daycares to generate")
 
 func main() {
-	// setup our parameters
-	grpcPort := 50051
-	httpsPort := 9091
-	gatewayPort := 8081
-
-	numDayCares := 4
-	numDogs := 1000
 
 	// setup for gRPC server
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", grpcPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", *grpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
 
 	// setup services
-	dogStore := store.NewDogStore(numDayCares, numDogs)
+	dogStore := store.NewDogStore(*numberDaycares, *numberDogs)
 	dogTrackServer := services.NewDogTrackServer(dogStore)
 	dog.RegisterDogTrackServer(grpcServer, dogTrackServer)
 
@@ -59,7 +72,7 @@ func main() {
 		wrappedServer.ServeHTTP(resp, req)
 	}
 	httpServer := http.Server{
-		Addr:    fmt.Sprintf(":%v", httpsPort),
+		Addr:    fmt.Sprintf(":%v", *httpsPort),
 		Handler: http.HandlerFunc(handler),
 	}
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
@@ -72,23 +85,23 @@ func main() {
 
 	// running gRPC server
 	go func () {
-		grpclog.Infof("Starting gRPC server. tcp port: %v", grpcPort)
+		grpclog.Infof("Starting gRPC server. tcp port: %v", *grpcPort)
 		errChannel <- grpcServer.Serve(lis)
 	}()
 
 	// running proxy for grpc-web
 	go func () {
-		grpclog.Infof("Starting grpc-web proxy server. https port: %v", httpsPort)
+		grpclog.Infof("Starting grpc-web proxy server. https port: %v", *httpsPort)
 		errChannel <- httpServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath)
 	}()
 
 	// running gRPC-gateway
 	go func () {
 		errChannel <- dog.RegisterDogTrackHandlerFromEndpoint(
-			context.Background(), mux, fmt.Sprintf("localhost:%v", grpcPort), opts)
-		grpclog.Infof("Starting gRPC-gateway server. https port: %v", gatewayPort)
+			context.Background(), mux, fmt.Sprintf("localhost:%v", *grpcPort), opts)
+		grpclog.Infof("Starting gRPC-gateway server. https port: %v", *gatewayPort)
 		grpcGateway := http.Server{
-			Addr: fmt.Sprintf(":%v", gatewayPort),
+			Addr: fmt.Sprintf(":%v", *gatewayPort),
 			Handler: wsproxy.WebsocketProxy(mux),
 			ErrorLog: logger,
 		}
