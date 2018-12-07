@@ -110,8 +110,8 @@ func main() {
 
 	for {
 		select {
-		case <-errChannel:
-			log.Fatal(<-errChannel)
+		case err := <-errChannel:
+			log.Fatal(err)
 		}
 	}
 }
