@@ -111,7 +111,9 @@ func main() {
 	for {
 		select {
 		case err := <-errChannel:
-			log.Fatal(err)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }
