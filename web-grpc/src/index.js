@@ -12,7 +12,7 @@ window.onSubmit = event => {
   request.setFloorId("1");
   const grpcRequest = grpc.invoke(DogTrack.TrackDogs, {
     request: request,
-    host: "https://localhost:9091",
+    host: "http://localhost:9091",
     metadata: new grpc.Metadata({ HeaderTestKey1: "ClientValue1" }),
     onHeaders: headers => {
       console.log("onHeaders", headers);
