@@ -51,7 +51,7 @@ func TestGRPCServer_TrackDogs(t *testing.T) {
 	}
 }
 
-func TestWSServer_TrackDogs(t *testing.T) {
+func TestWSServer(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
 	}
