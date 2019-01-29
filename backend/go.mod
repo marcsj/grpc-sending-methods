@@ -13,4 +13,4 @@ require (
 	google.golang.org/grpc v1.16.0
 )
 
-module github.com/marcsj/streaming-grpc-web-example/backend
+module github.com/marcsj/grpc-sending-methods/backend
