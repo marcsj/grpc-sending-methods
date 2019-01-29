@@ -42,7 +42,7 @@ func NewDogStore(numDayCares int, numDogs int) DogStore {
 		log.Printf("Location ID: %v\nFloors: %v", location, dogStore.floors[location])
 	}
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < numDogs; i++ {
 		locationID := dogStore.locations[rand.Intn(numDayCares)]
 		newDog := &dog.Dog{
 			Id:         ksuid.New().String(),
@@ -62,6 +62,7 @@ func NewDogStore(numDayCares int, numDogs int) DogStore {
 		dogStore.db[locationTag] = append(dogStore.db[locationTag], newDog)
 	}
 	log.Println("Finished initializing good puppers(and some not good).")
+
 	// wait to keep logs clean for location IDs
 	time.Sleep(500 * time.Millisecond)
 	return dogStore
@@ -113,19 +114,18 @@ func (s dogStore) dogCare(dogChannel chan *dog.Dog, locationTag LocationTag) {
 	for {
 		select {
 		case <-tick:
-			for _, d := range dogs {
-				change := randomdata.Boolean()
-				if change {
-					d.Location = &dog.Location{
-						X: d.Location.X + randomdata.Decimal(-1, 1),
-						Y: d.Location.Y + randomdata.Decimal(-1, 1),
-					}
-					statusChange := randomdata.Boolean()
-					if statusChange {
-						d.Status = dog.DogStatus(randomdata.Number(len(dog.DogStatus_value)))
-					}
-					dogChannel <- d
+			d := dogs[rand.Intn(len(dogs))]
+			change := randomdata.Boolean()
+			if change {
+				d.Location = &dog.Location{
+					X: d.Location.X + randomdata.Decimal(-1, 1),
+					Y: d.Location.Y + randomdata.Decimal(-1, 1),
 				}
+				statusChange := randomdata.Boolean()
+				if statusChange {
+					d.Status = dog.DogStatus(randomdata.Number(len(dog.DogStatus_value)))
+				}
+				dogChannel <- d
 			}
 		}
 	}
