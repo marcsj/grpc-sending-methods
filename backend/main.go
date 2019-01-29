@@ -23,22 +23,14 @@ func init() {
 	grpclog.SetLoggerV2(grpcLog)
 }
 
-var tlsCertFilePath = flag.String(
-	"tls_cert_file",
-	"../keys/local.dev.crt",
-	"Path to the CRT/PEM file.")
-var tlsKeyFilePath = flag.String(
-	"tls_key_file",
-	"../keys/local.dev.key",
-	"Path to the private key file.")
 var grpcPort = flag.Int(
 	"grpc_port",
 	50051,
 	"port for gRPC calls")
-var httpsPort = flag.Int(
-	"https_port",
+var grpcwPort = flag.Int(
+	"grpcw_port",
 	9091,
-	"port for TLS encrypted http")
+	"port for grpc-web")
 var gatewayPort = flag.Int(
 	"gateway_port",
 	8081,
@@ -72,7 +64,7 @@ func main() {
 		wrappedServer.ServeHTTP(resp, req)
 	}
 	httpServer := http.Server{
-		Addr:    fmt.Sprintf(":%v", *httpsPort),
+		Addr:    fmt.Sprintf(":%v", *grpcwPort),
 		Handler: http.HandlerFunc(handler),
 	}
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
@@ -91,8 +83,8 @@ func main() {
 
 	// running proxy for grpc-web
 	go func () {
-		grpclog.Infof("Starting grpc-web proxy server. https port: %v", *httpsPort)
-		errChannel <- httpServer.ListenAndServeTLS(*tlsCertFilePath, *tlsKeyFilePath)
+		grpclog.Infof("Starting grpc-web proxy server. https port: %v", *grpcwPort)
+		errChannel <- httpServer.ListenAndServe()
 	}()
 
 	// running gRPC-gateway
