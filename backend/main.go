@@ -82,7 +82,7 @@ func main() {
 
 	// running proxy for grpc-web
 	go func () {
-		grpclog.Infof("Starting grpc-web proxy server. https port: %v", *grpcwPort)
+		grpclog.Infof("Starting grpc-web proxy server. http port: %v", *grpcwPort)
 		errChannel <- httpServer.ListenAndServe()
 	}()
 
@@ -90,7 +90,7 @@ func main() {
 	go func () {
 		errChannel <- dog.RegisterDogTrackHandlerFromEndpoint(
 			context.Background(), mux, fmt.Sprintf("localhost:%v", *grpcPort), opts)
-		grpclog.Infof("Starting gRPC-gateway server. https port: %v", *gatewayPort)
+		grpclog.Infof("Starting gRPC-gateway server. http port: %v", *gatewayPort)
 		grpcGateway := http.Server{
 			Addr: fmt.Sprintf(":%v", *gatewayPort),
 			Handler: wsproxy.WebsocketProxy(mux, wsproxy.WithMethodParamOverride("method")),
