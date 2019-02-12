@@ -45,7 +45,6 @@ var numberDaycares = flag.Int(
 	"number of daycares to generate")
 
 func main() {
-
 	// setup for gRPC server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", *grpcPort))
 	if err != nil {
