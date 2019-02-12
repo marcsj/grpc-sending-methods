@@ -94,7 +94,7 @@ func main() {
 		grpclog.Infof("Starting gRPC-gateway server. https port: %v", *gatewayPort)
 		grpcGateway := http.Server{
 			Addr: fmt.Sprintf(":%v", *gatewayPort),
-			Handler: wsproxy.WebsocketProxy(mux),
+			Handler: wsproxy.WebsocketProxy(mux, wsproxy.WithMethodParamOverride("method")),
 			ErrorLog: logger,
 		}
 		errChannel <- grpcGateway.ListenAndServe()
