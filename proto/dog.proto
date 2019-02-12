@@ -52,7 +52,8 @@ enum DogStatus {
 service DogTrack {
     rpc TrackDogs (TrackRequest) returns (stream Dog) {
          option (google.api.http) = {
-             get: "/v1/dogs/track"
+             post: "/v1/dogs/track"
+             body: "*"
          };
     }
     rpc AddDog (Dog) returns (Response) {

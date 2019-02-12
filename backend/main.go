@@ -45,7 +45,6 @@ var numberDaycares = flag.Int(
 	"number of daycares to generate")
 
 func main() {
-
 	// setup for gRPC server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", *grpcPort))
 	if err != nil {
@@ -83,7 +82,7 @@ func main() {
 
 	// running proxy for grpc-web
 	go func () {
-		grpclog.Infof("Starting grpc-web proxy server. https port: %v", *grpcwPort)
+		grpclog.Infof("Starting grpc-web proxy server. http port: %v", *grpcwPort)
 		errChannel <- httpServer.ListenAndServe()
 	}()
 
@@ -91,10 +90,10 @@ func main() {
 	go func () {
 		errChannel <- dog.RegisterDogTrackHandlerFromEndpoint(
 			context.Background(), mux, fmt.Sprintf("localhost:%v", *grpcPort), opts)
-		grpclog.Infof("Starting gRPC-gateway server. https port: %v", *gatewayPort)
+		grpclog.Infof("Starting gRPC-gateway server. http port: %v", *gatewayPort)
 		grpcGateway := http.Server{
 			Addr: fmt.Sprintf(":%v", *gatewayPort),
-			Handler: wsproxy.WebsocketProxy(mux),
+			Handler: wsproxy.WebsocketProxy(mux, wsproxy.WithMethodParamOverride("method")),
 			ErrorLog: logger,
 		}
 		errChannel <- grpcGateway.ListenAndServe()
