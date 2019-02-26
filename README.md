@@ -10,6 +10,7 @@ Data is sent from the backend via these methods:
 These sending methods enable you to generate interfaces and models with gRPC once,
  and to be called in multiple different ways. The most important way this helps 
  you leverage code is by streaming to a web client.
+ 
 ## Server:
 
 1. Set up `$GOPATH` and add `$GOPATH/bin` to your `$PATH`
@@ -40,7 +41,10 @@ Javascript web client using grpc over grpc-web
 2. `npm start`
 3. Navigate to [http://localhost:8080](http://localhost:8080)
 
-### Use:
+### OpenAPI
+Per the example, our JSON documentation generates to `:8082/docs/{proto_name}`  
+ [http://localhost:8082/docs/dog](http://localhost:8082/docs/dog)
+### Use
 
 Look at the backend logs to see the initialization of each dog location ID. 
 The IDs listed can be entered into the client and used to receive dogs that are currently in those locations.
