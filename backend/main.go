@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/marcsj/grpc-sending-methods/backend/dog"
 	"github.com/marcsj/grpc-sending-methods/backend/services"
 	"github.com/marcsj/grpc-sending-methods/backend/store"
@@ -35,6 +34,10 @@ var gatewayPort = flag.Int(
 	"gateway_port",
 	8081,
 	"port for grpc-gateway requests")
+var openAPIPort = flag.Int(
+	"openapi_port",
+	8082,
+	"port for open api")
 var numberDogs = flag.Int(
 	"number_dogs",
 	1000,
@@ -45,6 +48,8 @@ var numberDaycares = flag.Int(
 	"number of daycares to generate")
 
 func main() {
+	errChannel := make(chan error)
+
 	// setup for gRPC server
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", *grpcPort))
 	if err != nil {
@@ -58,21 +63,17 @@ func main() {
 	dog.RegisterDogTrackServer(grpcServer, dogTrackServer)
 
 	// setup for proxy for grpc-web
-	wrappedServer := grpcweb.WrapServer(grpcServer)
-	handler := func(resp http.ResponseWriter, req *http.Request) {
-		wrappedServer.ServeHTTP(resp, req)
+	grpcWebServer := getGRPCWebServer(grpcServer, *grpcwPort)
+
+	// setup for openAPI server
+	openAPIServer, err := getOpenAPIServer("/", "dog")
+	if err != nil {
+		log.Fatal(err)
 	}
-	httpServer := http.Server{
-		Addr:    fmt.Sprintf(":%v", *grpcwPort),
-		Handler: http.HandlerFunc(handler),
-	}
-	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 
 	// setup for gRPC-gateway
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-
-	errChannel := make(chan error)
 
 	// running gRPC server
 	go func () {
@@ -83,10 +84,17 @@ func main() {
 	// running proxy for grpc-web
 	go func () {
 		grpclog.Infof("Starting grpc-web proxy server. http port: %v", *grpcwPort)
-		errChannel <- httpServer.ListenAndServe()
+		errChannel <- grpcWebServer.ListenAndServe()
+	}()
+
+	// running openAPI server to show api info
+	go func () {
+		grpclog.Infof("Starting OpenAPI server. http port: %v", *openAPIPort)
+		errChannel <- openAPIServer.ListenAndServe()
 	}()
 
 	// running gRPC-gateway
+	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 	go func () {
 		errChannel <- dog.RegisterDogTrackHandlerFromEndpoint(
 			context.Background(), mux, fmt.Sprintf("localhost:%v", *grpcPort), opts)

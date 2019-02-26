@@ -16,6 +16,7 @@ mkdir -p $WEB_DIR/google/api
 touch $WEB_DIR/google/api/annotations_pb.js
 
 GEN_NAME="dog"
+mkdir -p $BACKEND_DIR/$GEN_NAME
 protoc -I ./ \
   -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
   --swagger_out=logtostderr=true:$BACKEND_DIR/$GEN_NAME \
