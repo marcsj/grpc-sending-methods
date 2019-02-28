@@ -49,7 +49,12 @@ func getGRPCWebServer(grpcServer *grpc.Server, port int) (http.Server) {
 	}
 }
 
-func getOpenAPIServer(port int, basePath string, specPath string, specExtension string, specs ...string) (http.Server, error) {
+func getOpenAPIServer(
+	port int,
+	basePath string,
+	specPath string,
+	specExtension string,
+	specs ...string) (http.Server, error) {
 	handler := http.NotFoundHandler()
 	for _, spec := range specs {
 		bytes, err := getOpenAPISpecBytes(spec, specPath, specExtension)
