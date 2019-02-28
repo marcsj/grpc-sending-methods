@@ -11,50 +11,53 @@ import (
 	"path"
 )
 
+func getRedocHandler(handler http.Handler, basePath string, specBody []byte, spec string, specExtension string) http.Handler {
+	specHandler := middleware.Spec(fmt.Sprintf("/%s", spec), specBody, handler)
+	return middleware.Redoc(middleware.RedocOpts{
+		BasePath: basePath,
+		SpecURL:  path.Join(fmt.Sprintf("/%s", spec), specExtension),
+		Path:     fmt.Sprintf("docs/%s", spec),
+	}, specHandler)
+}
+
+func getOpenAPISpecBytes(name string, path string, extension string) ([]byte, error){
+	path = fmt.Sprintf("%s%s/%s.%s", path, name, name, extension)
+	specDoc, err := loads.Spec(path)
+	if err != nil {
+		return nil, err
+	}
+	bytes, err := json.MarshalIndent(specDoc.Spec(), "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return bytes, nil
+}
+
 func getGRPCWebServer(grpcServer *grpc.Server, port int) (http.Server) {
 	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
 		wrappedServer.ServeHTTP(resp, req)
 	}
+
 	return http.Server{
 		Addr:    fmt.Sprintf(":%v", port),
 		Handler: http.HandlerFunc(handler),
 	}
 }
 
-func getOpenAPIServer(basePath string, specs ...string) (http.Server, error){
-	newestHandler := http.NotFoundHandler()
-	for i, s := range specs {
-		specDoc, err := loads.Spec(
-			fmt.Sprintf("%s/%s.swagger.json", s, s))
+func getOpenAPIServer(basePath string, specPath string, specExtension string, specs ...string) (http.Server, error) {
+	handler := http.NotFoundHandler()
+	for _, spec := range specs {
+		bytes, err := getOpenAPISpecBytes(spec, specPath, specExtension)
 		if err != nil {
 			return http.Server{}, err
 		}
-		b, err := json.MarshalIndent(specDoc.Spec(), "", "  ")
-		if err != nil {
-			return http.Server{}, err
-		}
-
-		if i == 0 {
-			specHandler := middleware.Spec(fmt.Sprintf("/%s", s), b, nil)
-			newestHandler = middleware.Redoc(middleware.RedocOpts{
-				BasePath: basePath,
-				SpecURL:  path.Join(fmt.Sprintf("/%s", s), "swagger.json"),
-				Path:     fmt.Sprintf("docs/%s", s),
-			}, specHandler)
-		} else {
-			specHandler := middleware.Spec(fmt.Sprintf("/%s", s), b, newestHandler)
-			newestHandler = middleware.Redoc(middleware.RedocOpts{
-				BasePath: basePath,
-				SpecURL:  path.Join(fmt.Sprintf("/%s", s), "swagger.json"),
-				Path:     fmt.Sprintf("docs/%s", s),
-			}, specHandler)
-		}
+		handler = getRedocHandler(handler, basePath, bytes, spec, specExtension)
 	}
 
-	openAPIServer := http.Server{
+	server := http.Server{
 		Addr: fmt.Sprintf(":%v", *openAPIPort),
-		Handler: newestHandler,
+		Handler: handler,
 	}
-	return openAPIServer, nil
+	return server, nil
 }

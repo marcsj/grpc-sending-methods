@@ -66,7 +66,8 @@ func main() {
 	grpcWebServer := getGRPCWebServer(grpcServer, *grpcwPort)
 
 	// setup for openAPI server
-	openAPIServer, err := getOpenAPIServer("/", "dog")
+	openAPIServer, err := getOpenAPIServer(
+		"/", "", "swagger.json", "dog")
 	if err != nil {
 		log.Fatal(err)
 	}
