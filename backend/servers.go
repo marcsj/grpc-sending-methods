@@ -12,7 +12,12 @@ import (
 	"strings"
 )
 
-func getRedocHandler(handler http.Handler, basePath string, specBody []byte, spec string, specExtension string) http.Handler {
+func getRedocHandler(
+	handler http.Handler,
+	basePath string,
+	specBody []byte,
+	spec string,
+	specExtension string) http.Handler {
 	if !strings.HasSuffix(basePath, "/") {
 		basePath += "/"
 	}
