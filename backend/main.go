@@ -67,7 +67,7 @@ func main() {
 
 	// setup for openAPI server
 	openAPIServer, err := getOpenAPIServer(
-		"/", "", "swagger.json", "dog")
+		"/doggiez/", "", "swagger.json", "dog")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -88,7 +88,7 @@ func main() {
 		errChannel <- grpcWebServer.ListenAndServe()
 	}()
 
-	// running openAPI server to show api info
+	// running openAPI server
 	go func () {
 		grpclog.Infof("Starting OpenAPI server. http port: %v", *openAPIPort)
 		errChannel <- openAPIServer.ListenAndServe()

@@ -9,14 +9,18 @@ import (
 	"google.golang.org/grpc"
 	"net/http"
 	"path"
+	"strings"
 )
 
 func getRedocHandler(handler http.Handler, basePath string, specBody []byte, spec string, specExtension string) http.Handler {
-	specHandler := middleware.Spec(fmt.Sprintf("/%s", spec), specBody, handler)
+	if !strings.HasSuffix(basePath, "/") {
+		basePath += "/"
+	}
+	specHandler := middleware.Spec(fmt.Sprintf("%sdocs/%s", basePath, spec), specBody, handler)
 	return middleware.Redoc(middleware.RedocOpts{
 		BasePath: basePath,
-		SpecURL:  path.Join(fmt.Sprintf("/%s", spec), specExtension),
-		Path:     fmt.Sprintf("docs/%s", spec),
+		SpecURL:  path.Join(fmt.Sprintf("%sdocs/%s", basePath, spec), specExtension),
+		Path:     fmt.Sprintf("/docs/%s", spec),
 	}, specHandler)
 }
 
