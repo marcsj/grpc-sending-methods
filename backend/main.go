@@ -67,7 +67,7 @@ func main() {
 
 	// setup for openAPI server
 	openAPIServer, err := getOpenAPIServer(
-		"/doggiez/", "", "swagger.json", "dog")
+		*openAPIPort, "/", "", "swagger.json", "dog")
 	if err != nil {
 		log.Fatal(err)
 	}
