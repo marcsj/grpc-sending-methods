@@ -73,7 +73,7 @@ func main() {
 	}
 
 	// setup for gRPC-gateway
-	mux := runtime.NewServeMux()
+	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(matchAllHeaders))
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 
 	// running gRPC server
@@ -102,7 +102,10 @@ func main() {
 		grpclog.Infof("Starting gRPC-gateway server. http port: %v", *gatewayPort)
 		grpcGateway := http.Server{
 			Addr: fmt.Sprintf(":%v", *gatewayPort),
-			Handler: wsproxy.WebsocketProxy(mux, wsproxy.WithMethodParamOverride("method")),
+			Handler: wsproxy.WebsocketProxy(
+				mux,
+				wsproxy.WithMethodParamOverride("method"),
+				wsproxy.WithRequestMutator(paramsToHeaders)),
 			ErrorLog: logger,
 		}
 		errChannel <- grpcGateway.ListenAndServe()
