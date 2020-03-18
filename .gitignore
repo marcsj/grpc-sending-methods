@@ -6,4 +6,3 @@ node_modules/
 keys/
 *.pb.go
 generated
-backend/dog

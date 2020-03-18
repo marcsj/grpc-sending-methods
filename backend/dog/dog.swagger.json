@@ -1,0 +1,320 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "dog.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/dogs": {
+      "get": {
+        "operationId": "GetAllDogs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dogListDogs"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "floor_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DogTrack"
+        ]
+      }
+    },
+    "/v1/dogs/add": {
+      "post": {
+        "operationId": "AddDog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dogResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dogDog"
+            }
+          }
+        ],
+        "tags": [
+          "DogTrack"
+        ]
+      }
+    },
+    "/v1/dogs/delete/{dog_id}": {
+      "post": {
+        "operationId": "DeleteDog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/dogResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "dog_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dogDeleteRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DogTrack"
+        ]
+      }
+    },
+    "/v1/dogs/track": {
+      "post": {
+        "operationId": "TrackDogs",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/dogDog"
+                },
+                "error": {
+                  "$ref": "#/definitions/runtimeStreamError"
+                }
+              },
+              "title": "Stream result of dogDog"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dogTrackRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DogTrack"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "dogDeleteRequest": {
+      "type": "object",
+      "properties": {
+        "dog_id": {
+          "type": "string"
+        },
+        "location_id": {
+          "type": "string"
+        },
+        "floor_id": {
+          "type": "string"
+        }
+      }
+    },
+    "dogDog": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "location_id": {
+          "type": "string"
+        },
+        "floor_id": {
+          "type": "string"
+        },
+        "location": {
+          "$ref": "#/definitions/dogLocation"
+        },
+        "status": {
+          "$ref": "#/definitions/dogDogStatus"
+        }
+      }
+    },
+    "dogDogStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OK",
+        "GOOD_PUP",
+        "KENNEL_COUGH",
+        "WORMS",
+        "FLEAS",
+        "LYME_DISEASE",
+        "HEART_DISEASE",
+        "AGGRESSIVE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "dogListDogs": {
+      "type": "object",
+      "properties": {
+        "dogs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dogDog"
+          }
+        }
+      }
+    },
+    "dogLocation": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number",
+          "format": "double"
+        },
+        "y": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "dogResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "dogTrackRequest": {
+      "type": "object",
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "floor_id": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "runtimeStreamError": {
+      "type": "object",
+      "properties": {
+        "grpc_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "http_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "http_status": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

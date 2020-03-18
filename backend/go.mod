@@ -18,3 +18,5 @@ require (
 )
 
 module github.com/marcsj/grpc-sending-methods/backend
+
+go 1.13
