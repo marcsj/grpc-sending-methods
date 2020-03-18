@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func getRedocHandler(
+func GetRedocHandler(
 	handler http.Handler,
 	basePath string,
 	specBody []byte,
@@ -29,7 +29,7 @@ func getRedocHandler(
 	}, specHandler)
 }
 
-func getOpenAPISpecBytes(name string, path string, extension string) ([]byte, error){
+func GetOpenAPISpecBytes(name string, path string, extension string) ([]byte, error){
 	path = fmt.Sprintf("%s%s/%s.%s", path, name, name, extension)
 	specDoc, err := loads.Spec(path)
 	if err != nil {
@@ -42,7 +42,7 @@ func getOpenAPISpecBytes(name string, path string, extension string) ([]byte, er
 	return bytes, nil
 }
 
-func getGRPCWebServer(grpcServer *grpc.Server, port int) (http.Server) {
+func GetGRPCWebServer(grpcServer *grpc.Server, port int) (http.Server) {
 	wrappedServer := grpcweb.WrapServer(grpcServer)
 	handler := func(resp http.ResponseWriter, req *http.Request) {
 		wrappedServer.ServeHTTP(resp, req)
@@ -54,7 +54,7 @@ func getGRPCWebServer(grpcServer *grpc.Server, port int) (http.Server) {
 	}
 }
 
-func getOpenAPIServer(
+func GetOpenAPIServer(
 	port int,
 	basePath string,
 	specPath string,
@@ -62,11 +62,11 @@ func getOpenAPIServer(
 	specs ...string) (http.Server, error) {
 	handler := http.NotFoundHandler()
 	for _, spec := range specs {
-		bytes, err := getOpenAPISpecBytes(spec, specPath, specExtension)
+		bytes, err := GetOpenAPISpecBytes(spec, specPath, specExtension)
 		if err != nil {
 			return http.Server{}, err
 		}
-		handler = getRedocHandler(handler, basePath, bytes, spec, specExtension)
+		handler = GetRedocHandler(handler, basePath, bytes, spec, specExtension)
 	}
 
 	server := http.Server{
