@@ -4,7 +4,7 @@ Examples of streaming and otherwise sending gRPC from a go backend to clients us
 Data is sent from the backend via these methods:
 - **[gRPC](https://github.com/grpc/grpc-go)**
 - **[gRPC-gateway](https://github.com/grpc-ecosystem/grpc-gateway)**(JSON over http)
-- **gRPC-gateway with websockets**(JSON over ws), 
+- **[grpc-websocket-proxy](https://github.com/tmc/grpc-websocket-proxy)**(JSON over websockets), 
 - **[grpc-web](https://github.com/improbable-eng/grpc-web)**
 
 These sending methods enable you to generate interfaces and models with gRPC once,
