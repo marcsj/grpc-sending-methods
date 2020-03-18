@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/marcsj/grpc-sending-methods/backend"
 	"github.com/marcsj/grpc-sending-methods/backend/dog"
 	"github.com/marcsj/grpc-sending-methods/backend/services"
 	"github.com/marcsj/grpc-sending-methods/backend/store"
@@ -63,40 +64,40 @@ func main() {
 	dog.RegisterDogTrackServer(grpcServer, dogTrackServer)
 
 	// setup for proxy for grpc-web
-	grpcWebServer := getGRPCWebServer(grpcServer, *grpcwPort)
+	grpcWebServer := backend.GetGRPCWebServer(grpcServer, *grpcwPort)
 
 	// setup for openAPI server
-	openAPIServer, err := getOpenAPIServer(
+	openAPIServer, err := backend.GetOpenAPIServer(
 		*openAPIPort, "/", "", "swagger.json", "dog")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// setup for gRPC-gateway
-	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(matchAllHeaders))
+	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(backend.MatchAllHeaders))
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 
 	// running gRPC server
-	go func () {
+	go func() {
 		grpclog.Infof("Starting gRPC server. tcp port: %v", *grpcPort)
 		errChannel <- grpcServer.Serve(lis)
 	}()
 
 	// running proxy for grpc-web
-	go func () {
+	go func() {
 		grpclog.Infof("Starting grpc-web proxy server. http port: %v", *grpcwPort)
 		errChannel <- grpcWebServer.ListenAndServe()
 	}()
 
 	// running openAPI server
-	go func () {
+	go func() {
 		grpclog.Infof("Starting OpenAPI server. http port: %v", *openAPIPort)
 		errChannel <- openAPIServer.ListenAndServe()
 	}()
 
 	// running gRPC-gateway
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
-	go func () {
+	go func() {
 		errChannel <- dog.RegisterDogTrackHandlerFromEndpoint(
 			context.Background(), mux, fmt.Sprintf("localhost:%v", *grpcPort), opts)
 		grpclog.Infof("Starting gRPC-gateway server. http port: %v", *gatewayPort)
@@ -105,7 +106,7 @@ func main() {
 			Handler: wsproxy.WebsocketProxy(
 				mux,
 				wsproxy.WithMethodParamOverride("method"),
-				wsproxy.WithRequestMutator(paramsToHeaders)),
+				wsproxy.WithRequestMutator(backend.ParamsToHeaders)),
 			ErrorLog: logger,
 		}
 		errChannel <- grpcGateway.ListenAndServe()
