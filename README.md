@@ -12,19 +12,7 @@ These sending methods enable you to generate interfaces and models with gRPC onc
  you leverage code is by streaming to a web client.
  
 ## Server:
-
-1. Set up `$GOPATH` and add `$GOPATH/bin` to your `$PATH`
-2. Fetch the following dependencies:
-```
-go get -u github.com/golang/protobuf/protoc-gen-go
-go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-go get -u github.com/golang/protobuf/protoc-gen-go
-```
-3. `cd proto`
-4. Run `./generate.sh`
-5. For Go 1.11 vendoring, set environmental variable `GO111MODULE=on`
-6. `go run main.go` in backend directory
+`go run backend/cmd/server/main.go`
 
 
 ## Clients:
